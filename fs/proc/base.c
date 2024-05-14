@@ -1178,7 +1178,6 @@ static ssize_t oom_score_adj_write(struct file *file, const char __user *buf,
 	}
 
 	err = __set_oom_adj(file, oom_score_adj, false);
-
 out:
 	return err < 0 ? err : count;
 }
