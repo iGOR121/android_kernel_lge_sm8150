@@ -30,7 +30,6 @@ static ssize_t corefs_show(struct kobject *kobj,
 
 static struct kobj_attribute corefs_attr = __ATTR_RO(corefs);
 
-<<<<<<< HEAD
 static ssize_t bugfix_inode_eviction_show(struct kobject *kobj,
 			 struct kobj_attribute *attr, char *buff)
 {
@@ -39,9 +38,6 @@ static ssize_t bugfix_inode_eviction_show(struct kobject *kobj,
 
 static struct kobj_attribute bugfix_inode_eviction_attr =
 	__ATTR_RO(bugfix_inode_eviction);
-
-static struct kobj_attribute mounter_context_for_backing_rw_attr =
-	__ATTR_RO(mounter_context_for_backing_rw);
 
 static struct attribute *attributes[] = {
 	&corefs_attr.attr,
