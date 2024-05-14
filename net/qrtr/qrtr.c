@@ -123,7 +123,6 @@ static inline struct qrtr_sock *qrtr_sk(struct sock *sk)
 }
 
 static unsigned int qrtr_local_nid = CONFIG_QRTR_NODE_ID;
-static unsigned int qrtr_wakeup_ms = 500;
 
 /* for node ids */
 static RADIX_TREE(qrtr_nodes, GFP_KERNEL);
@@ -707,20 +706,15 @@ EXPORT_SYMBOL(qrtr_peek_pkt_size);
 static void qrtr_alloc_backup(struct work_struct *work)
 {
 	struct sk_buff *skb;
-	int errcode;
 
 	while (skb_queue_len(&qrtr_backup_lo) < QRTR_BACKUP_LO_NUM) {
-		skb = alloc_skb_with_frags(sizeof(struct qrtr_hdr_v1),
-					   QRTR_BACKUP_LO_SIZE, 0, &errcode,
-					   GFP_KERNEL);
+		skb = alloc_skb(QRTR_BACKUP_LO_SIZE, GFP_KERNEL);
 		if (!skb)
 			break;
 		skb_queue_tail(&qrtr_backup_lo, skb);
 	}
 	while (skb_queue_len(&qrtr_backup_hi) < QRTR_BACKUP_HI_NUM) {
-		skb = alloc_skb_with_frags(sizeof(struct qrtr_hdr_v1),
-					   QRTR_BACKUP_HI_SIZE, 0, &errcode,
-					   GFP_KERNEL);
+		skb = alloc_skb(QRTR_BACKUP_HI_SIZE, GFP_KERNEL);
 		if (!skb)
 			break;
 		skb_queue_tail(&qrtr_backup_hi, skb);
@@ -842,7 +836,7 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 	    cb->type != QRTR_TYPE_RESUME_TX)
 		goto err;
 
-	pm_wakeup_ws_event(node->ws, qrtr_wakeup_ms, true);
+	__pm_wakeup_event(node->ws, 0);
 
 	skb->data_len = size;
 	skb->len = size;
@@ -1748,11 +1742,6 @@ static int qrtr_recvmsg(struct socket *sock, struct msghdr *msg,
 	rc = copied;
 
 	if (addr) {
-		/* There is an anonymous 2-byte hole after sq_family,
-		 * make sure to clear it.
-		 */
-		memset(addr, 0, sizeof(*addr));
-
 		addr->sq_family = AF_QIPCRTR;
 		addr->sq_node = cb->src_node;
 		addr->sq_port = cb->src_port;
